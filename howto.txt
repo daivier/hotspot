@@ -1,0 +1,20 @@
+flowchart TD
+
+  subgraph Local
+    A[Usuário conecta na rede Wi-Fi (AP UniFi)]
+    B[UniFi AP redireciona para portal externo]
+    C[Parâmetros da URL: ?mac=...&ip=...]
+  end
+
+  subgraph Internet
+    D[Servidor Node.js na nuvem (ex: Heroku, Vercel)]
+    E[MongoDB Atlas (banco de dados em nuvem)]
+    F[Script frontend com coleta automática de MAC/IP]
+    G[Formulário: nome, e-mail, telefone + aceite LGPD]
+    H[Backend salva log no MongoDB]
+    I[Backend responde com { success: true, redirect: 'https://www.google.com' }]
+  end
+
+  A --> B --> C --> F --> G --> H --> I --> J[Frontend redireciona manualmente para Google]
+  H --> E
+  D <-->|/api/login| F

@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <title>Login Wi-Fi - Hotspot</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f4f4;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    .container {
+      background: white;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.1);
+      max-width: 400px;
+      width: 100%;
+    }
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    input, label {
+      display: block;
+      width: 100%;
+      margin-bottom: 15px;
+      font-size: 16px;
+    }
+    input[type="checkbox"] {
+      width: auto;
+      margin-right: 10px;
+    }
+    button {
+      background: #28a745;
+      color: white;
+      border: none;
+      padding: 12px;
+      font-size: 16px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .error {
+      color: red;
+      font-size: 14px;
+      margin-bottom: 10px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Conectar ao Wi-Fi</h2>
+    <div class="error" id="error"></div>
+    <form id="loginForm">
+      <input type="text" id="name" placeholder="Nome completo" required>
+      <input type="email" id="email" placeholder="E-mail" required>
+      <input type="tel" id="phone" placeholder="Telefone (com DDD)" required>
+      <input type="hidden" id="mac" placeholder="MAC Address do dispositivo" required>
+      <input type="hidden" id="ip" placeholder="IP do dispositivo" required>
+
+      <label>
+        <input type="checkbox" id="consent"> Concordo com os <a href="#" onclick="alert('Exemplo de Termo LGPD: Seus dados serão armazenados por 12 meses e não serão compartilhados com terceiros, conforme a LGPD.'); return false;">termos de uso</a> e a política de privacidade.
+      </label>
+
+      <button type="submit">Acessar Wi-Fi</button>
+    </form>
+  </div>
+
+  <script>
+    const form = document.getElementById('loginForm');
+    const error = document.getElementById('error');
+
+    form.addEventListener('submit', async function (e) {
+      e.preventDefault();
+      error.textContent = "";
+
+      const name = document.getElementById('name').value.trim();
+      const email = document.getElementById('email').value.trim();
+      const phone = document.getElementById('phone').value.trim();
+      const macAddress = document.getElementById('mac').value.trim();
+      const ipAddress = document.getElementById('ip').value.trim();
+      const consent = document.getElementById('consent').checked;
+
+      if (!consent) {
+        error.textContent = "Você precisa aceitar os termos para continuar.";
+        return;
+      }
+
+	try {
+	  const res = await fetch('/api/login', {
+		method: 'POST',
+		headers: { 'Content-Type': 'application/json' },
+		body: JSON.stringify({ name, email, phone, macAddress, ipAddress, consent })
+	  });
+
+	  const data = await res.json(); // sempre parsear o JSON
+
+	  if (data.success && data.redirect) {
+		window.location.href = data.redirect; // redirecionamento seguro via JS
+	  } else if (data.error) {
+		error.textContent = data.error;
+	  } else {
+		error.textContent = "Erro inesperado. Tente novamente.";
+	  }
+	} catch (err) {
+	  error.textContent = "Erro ao conectar. Tente novamente.";
+	}
+
+    });
+  </script>
+  <!-- Adicione antes do </body> -->
+<script>
+  // Função para ler parâmetros da URL
+  function getQueryParam(param) {
+    const urlParams = new URLSearchParams(window.location.search);
+    return urlParams.get(param) || '';
+  }
+
+  window.addEventListener('DOMContentLoaded', () => {
+    // Preenche automaticamente os campos de MAC/IP
+    document.getElementById('mac').value = getQueryParam('mac');
+    document.getElementById('ip').value = getQueryParam('ip');
+  });
+</script>
+</body>
+</html>
