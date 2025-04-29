@@ -2,6 +2,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const path = require('path');
+const http = require('http');
 const https = require('https');
 const fs = require('fs');
 const axios = require('axios');
@@ -10,10 +11,10 @@ const app = express();
 const PORT = process.env.PORT || 443;
 
 // Certificado SSL
-const options = {
+/*const options = {
   key: fs.readFileSync('sslcert/private.key'),
   cert: fs.readFileSync('sslcert/certificate.crt')
-};
+};*/
 
 // Middleware
 app.use(cors());
@@ -72,9 +73,9 @@ app.post('/api/login', async (req, res) => {
 
   // Autoriza o MAC no Controller UniFi
   try {
-    const controllerUrl = 'https://SEU_CONTROLLER:8443';
-    const username = 'SEU_USUARIO';
-    const password = 'SUA_SENHA';
+    const controllerUrl = 'https://172.24.253.237:8443';
+    const username = 'smfortaleza-livre';
+    const password = '@70RT@L32@';
     const site = 'default'; // ou o seu siteId correto
 
     const session = await axios.post(`${controllerUrl}/api/login`, {
@@ -102,6 +103,11 @@ app.post('/api/login', async (req, res) => {
 });
 
 // HTTPS Server
-https.createServer(options, app).listen(PORT, () => {
+/*https.createServer(options, app).listen(PORT, () => {
   console.log(`HTTPS Server running on port ${PORT}`);
+});*/
+
+
+http.createServer(app).listen(80, () => {
+  console.log('Servidor HTTP rodando na porta 80');
 });
