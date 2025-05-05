@@ -216,9 +216,7 @@
         const data = await res.json();
 
         if (data.success && data.redirect) {
-          setTimeout(() => {
             window.location.href = data.redirect;
-          }, 2000);
         } else {
           loading.style.display = "none";
           error.textContent = data.error || "Erro inesperado. Tente novamente.";

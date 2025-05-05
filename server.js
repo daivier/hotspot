@@ -38,7 +38,8 @@ const LogSchema = new mongoose.Schema({
   ipAddress: String,
   userAgent: String,
   consent: Boolean,
-  loginTime: { type: Date, default: Date.now }
+  loginTime: { type: Date, default: Date.now },
+  logoutTime: Date
 });
 const Log = mongoose.model('Log', LogSchema);
 
@@ -104,11 +105,51 @@ app.post('/api/login', async (req, res) => {
   }
 });
 
-// HTTPS Server
-/*https.createServer(options, app).listen(PORT, () => {
-  console.log(`HTTPS Server running on port ${PORT}`);
-});*/
+// Adiciona logoutTime ao schema
+LogSchema.add({ logoutTime: Date });
 
+// Monitoramento de desconexões UniFi
+async function monitorDisconnections() {
+  try {
+    const controllerUrl = 'https://10.1.0.12:8443';
+    const username = 'daiviermarquez@gfortaleza.com.br';
+    const password = '@70RT@L32@sm';
+    const site = 'default';
+    const agent = new https.Agent({ rejectUnauthorized: false });
+
+    // Login
+    const session = await axios.post(`${controllerUrl}/api/login`, {
+      username,
+      password
+    }, { withCredentials: true, httpsAgent: agent });
+
+    const cookies = session.headers['set-cookie'];
+
+    // Busca MACs ativos
+    const response = await axios.get(`${controllerUrl}/api/s/${site}/stat/sta`, {
+      headers: { Cookie: cookies.join(';') },
+      httpsAgent: agent
+    });
+
+    const activeMacs = response.data.data.map(cli => cli.mac.toLowerCase());
+
+    // Verifica usuários sem logoutTime
+    const logs = await Log.find({ logoutTime: null });
+
+    for (const log of logs) {
+      if (!activeMacs.includes(log.macAddress.toLowerCase())) {
+        log.logoutTime = new Date();
+        await log.save();
+        console.log(`[Logout detectado] ${log.macAddress} às ${log.logoutTime}`);
+      }
+    }
+  } catch (err) {
+    console.error('[Monitor UniFi] Erro:', err.response?.data || err.message);
+  }
+}
+
+// Executa a cada 5 minutos
+setInterval(monitorDisconnections, 5 * 60 * 1000);
 
 http.createServer(app).listen(80, () => {
   console.log('Servidor HTTP rodando na porta 80');
