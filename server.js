@@ -33,6 +33,7 @@ const LogSchema = new mongoose.Schema({
   name: String,
   email: String,
   phone: String,
+  cpf: String,
   macAddress: String,
   ipAddress: String,
   userAgent: String,
@@ -56,15 +57,16 @@ app.get('/guest/s/default', (req, res) => {
 
 // API de login
 app.post('/api/login', async (req, res) => {
-  const { name, email, phone, macAddress, ipAddress, consent } = req.body;
+  const { name, email, phone, cpf, macAddress, ipAddress, consent } = req.body;
 
   if (!consent) return res.status(400).json({ error: 'É necessário aceitar os termos de uso.' });
-  if (!name || !email || !phone || !macAddress || !ipAddress) return res.status(400).json({ error: 'Preencha todos os campos obrigatórios.' });
+  if (!name || !email || !phone || !cpf || !macAddress || !ipAddress) return res.status(400).json({ error: 'Preencha todos os campos obrigatórios.' });
 
   await Log.create({
     name,
     email,
     phone,
+    cpf,
     macAddress,
     ipAddress,
     userAgent: req.headers['user-agent'],
