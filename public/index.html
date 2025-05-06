@@ -186,6 +186,7 @@
     const form = document.getElementById('loginForm');
     const error = document.getElementById('error');
     const loading = document.getElementById('loading');
+    const isMobile = /android|iphone|ipad|ipod/i.test(navigator.userAgent);
 
     form.addEventListener('submit', async function (e) {
       e.preventDefault();
@@ -215,8 +216,13 @@
 
         const data = await res.json();
 
-        if (data.success && data.redirect) {
-            window.location.href = data.redirect;
+        if (!data.success || data.redirect) {
+			if (!isMobile) {
+			  document.querySelector('.loading-text').textContent = "Acesso autorizado! Redirecionando...";
+			  setTimeout(() => {
+				window.location.href = data.redirect;
+			  }, 5000);
+			}
         } else {
           loading.style.display = "none";
           error.textContent = data.error || "Erro inesperado. Tente novamente.";

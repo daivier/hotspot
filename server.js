@@ -77,8 +77,8 @@ app.post('/api/login', async (req, res) => {
   // Autoriza o MAC no Controller UniFi
   try {
     const controllerUrl = 'https://10.1.0.12:8443';
-    const username = 'smfortaleza-livre';
-    const password = '@70RT@L32@';
+    const username = 'daiviermarquez@gfortaleza.com.br';
+    const password = '@70RT@L32@sm';
     const site = 'default'; // ou o seu siteId correto
 
     const session = await axios.post(`${controllerUrl}/api/login`, {
