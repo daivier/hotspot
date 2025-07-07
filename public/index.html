@@ -223,6 +223,15 @@
 				window.location.href = data.redirect;
 			  }, 5000);
 			}
+			else {
+				// No mobile, espera 6 segundos. Se ainda estiver na tela, redireciona manualmente
+				setTimeout(() => {
+				  if (document.visibilityState === 'visible') {
+					// ainda visível, provavelmente o redirecionamento automático falhou
+					window.location.href = data.redirect;
+				  }
+				}, 12000);
+			}
         } else {
           loading.style.display = "none";
           error.textContent = data.error || "Erro inesperado. Tente novamente.";

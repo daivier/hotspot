@@ -56,6 +56,10 @@ app.get('/guest/s/default', (req, res) => {
   res.redirect(`/index.html?ap=${encodeURIComponent(ap)}&mac=${encodeURIComponent(id)}&ip=${encodeURIComponent(ip)}&t=${encodeURIComponent(t)}&url=${encodeURIComponent(url)}&ssid=${encodeURIComponent(ssid)}`);
 });
 
+app.get('/success204', (req, res) => {
+  res.status(204).end(); // Sem conteúdo
+});
+
 // API de login
 app.post('/api/login', async (req, res) => {
   const { name, email, phone, cpf, macAddress, ipAddress, consent } = req.body;
@@ -97,7 +101,11 @@ app.post('/api/login', async (req, res) => {
       httpsAgent: new https.Agent({ rejectUnauthorized: false })
     });
 
-    res.json({ success: true, redirect: 'http://www.google.com' });
+    const ua = req.headers['user-agent'] || '';
+    const isMobile = /android|iphone|ipad|ipod/i.test(ua);
+
+    const redirectUrl = isMobile ? '/success204' : 'http://www.google.com';
+    res.json({ success: true, redirect: redirectUrl });
 
   } catch (error) {
     console.error('Erro ao autorizar no UniFi:', error.response?.data || error.message);
